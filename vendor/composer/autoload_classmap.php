@@ -44,6 +44,7 @@ return array(
     'App\\Imports\\ProductsImport' => $baseDir . '/app/Imports/ProductsImport.php',
     'App\\Imports\\SalesImport' => $baseDir . '/app/Imports/SalesImport.php',
     'App\\Imports\\SuppliersImport' => $baseDir . '/app/Imports/SuppliersImport.php',
+    'App\\Ledger' => $baseDir . '/app/Ledger.php',
     'App\\Product' => $baseDir . '/app/Product.php',
     'App\\Product_Keluar' => $baseDir . '/app/Product_Keluar.php',
     'App\\Product_Masuk' => $baseDir . '/app/Product_Masuk.php',

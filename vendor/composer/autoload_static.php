@@ -627,6 +627,7 @@ class ComposerStaticInite609c4749c4e0648fcce808c107ed80f
         'App\\Imports\\ProductsImport' => __DIR__ . '/../..' . '/app/Imports/ProductsImport.php',
         'App\\Imports\\SalesImport' => __DIR__ . '/../..' . '/app/Imports/SalesImport.php',
         'App\\Imports\\SuppliersImport' => __DIR__ . '/../..' . '/app/Imports/SuppliersImport.php',
+        'App\\Ledger' => __DIR__ . '/../..' . '/app/Ledger.php',
         'App\\Product' => __DIR__ . '/../..' . '/app/Product.php',
         'App\\Product_Keluar' => __DIR__ . '/../..' . '/app/Product_Keluar.php',
         'App\\Product_Masuk' => __DIR__ . '/../..' . '/app/Product_Masuk.php',

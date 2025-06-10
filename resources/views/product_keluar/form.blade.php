@@ -7,6 +7,9 @@
     .mt-3{
          margin-top: 3%;
     }
+    .customer-ledger-details.mt-3 {
+        margin-right: 15%;
+    }
     @media (min-width: 992px) { /* Bootstrap's "large" breakpoint starts at 992px */
         .modal-content {
             width: 150%;
@@ -133,6 +136,23 @@
                     <div>
                         <strong>Grand Total: PKR <span id="grand-total">0.00</span></strong>
                     </div>
+                    <div class="customer-ledger-details mt-3">
+                        <div class="form-group">
+                            <label for="due">Total Due</label>
+                            <input type="text" name="total_due" id="total_due" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="due">Total Paid</label>
+                            <input type="text" name="total_paid" id="total_paid">
+                        </div>
+                        <div class="form-group">
+                            <label for="due">Total Remaining</label>
+                            <input type="text" name="total_remaining" id="total_remaining" readonly>
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <hr>
                     <button type="button" class="btn btn-danger pull-left mt-3" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success mt-3">Submit</button>
                 </div>
@@ -188,8 +208,49 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const totalPaidInput = document.getElementById('total_paid');
+        const totalDueInput = document.getElementById('total_due');
+        const totalRemainingInput = document.getElementById('total_remaining');
+        const grandTotalSpan = document.getElementById('grand-total');
+
+        function calculateRemaining() {
+            const totalDue = parseFloat(totalDueInput.value) || 0;
+            const grandTotal = parseFloat(grandTotalSpan.textContent) || 0;
+            const totalPaid = parseFloat(totalPaidInput.value) || 0;
+
+            const totalRemaining = (grandTotal - totalPaid) + totalDue;
+
+            totalRemainingInput.value = totalRemaining.toFixed(2);
+        }
+
+        // Trigger on input
+        totalPaidInput.addEventListener('input', calculateRemaining);
+
+        // Optional initial call
+        calculateRemaining();
+    });
+</script> -->
+
 <script>
     $(document).ready(function () {
+
+        function updateTotalRemaining() {
+            let grandTotal = parseFloat($('#grand-total').text().trim()) || 0;
+            let totalPaid = parseFloat($('#total_paid').val().trim()) || 0;
+            let totalDue = parseFloat($('#total_due').val().trim()) || 0;
+
+            console.log('grandTotal:', grandTotal, 'totalPaid:', totalPaid, 'totalDue:', totalDue);
+
+            let difference = grandTotal - totalPaid;
+            let totalRemaining = difference + totalDue;
+
+            console.log('difference:', difference, 'totalRemaining:', totalRemaining);
+
+            $('#total_remaining').val(totalRemaining.toFixed(2));
+        }
+
         $('#category_id').change(function () {
             let categoryId = $(this).val();
             let productSelect = $('#product_id');
@@ -211,6 +272,35 @@
                 });
             }
         });
+
+        $('#customer_id').change(function () {
+            let customerId = $(this).val();
+            let ledgerSelect = $('#ledger_id');
+
+            if (customerId) {
+                $.ajax({
+                    url: `/ledgers-by-customer/${customerId}`,
+                    type: 'GET',
+                    success: function (response) {
+                        
+                        console.log('ledger',response);
+
+                        // Show total due
+                        $('#total_due').val(response.total_due);
+                        updateTotalRemaining();
+                    },
+                    error: function () {
+                        alert('Failed to fetch ledgers. Please try again.');
+                    }
+                });
+            }
+        });
+
+         // When total_paid input changes, recalculate remaining
+        $('#total_paid').on('input', function() {
+            updateTotalRemaining();
+        });
+
     });
 </script>
 <script>
@@ -288,41 +378,14 @@
         });
     });
     
-    // function updateGrandTotal() {
-    //     let grandTotal = 0;
-    //     $('input[name="total[]"]').each(function () {
-    //         grandTotal += parseFloat($(this).val()) || 0;
-    //     });
-    //     $('#grand-total').text(grandTotal.toFixed(2));
-    // }
-    
-    // // Trigger grand total update when qty or price changes
-    // $(document).on('input', 'input[name="qty[]"], input[name="price[]"]', function () {
-    //     var row = $(this).closest('.product-row');
-    //     var qty = parseFloat(row.find('input[name="qty[]"]').val()) || 0;
-    //     var price = parseFloat(row.find('input[name="price[]"]').val()) || 0;
-    //     var total = qty * price;
-    //     row.find('input[name="total[]"]').val(total.toFixed(2));
-    
-    //     updateGrandTotal();
-    // });
-    
-    // // Also recalculate grand total when a row is added or removed
-    // $('#add-product').click(function () {
-    //     setTimeout(updateGrandTotal, 100); // slight delay to wait for DOM append
-    // });
-    
-    // $(document).on('click', '.remove-row', function () {
-    //     $(this).closest('.product-row').remove();
-    //     updateGrandTotal();
-    // });
-    
     function updateGrandTotal() {
         let grandTotal = 0;
         $('#modal-form input[name="total[]"]').each(function () {
             grandTotal += parseFloat($(this).val()) || 0;
         });
         $('#grand-total').text(grandTotal.toFixed(2));
+
+        updateTotalRemaining();
     }// Setup event listeners when document is ready
     $(document).ready(function() {
         // Trigger grand total update when qty or price changes in add form

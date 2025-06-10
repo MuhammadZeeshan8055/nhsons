@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Category;
 use App\Customer;
+use App\Ledger;
 use App\User;
 use App\Exports\ExportProdukKeluar;
 use App\Product;
@@ -65,7 +66,7 @@ class ProductKeluarController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'bill_number' => 'required|unique:product_keluar', // unique bill_number
+            'bill_number' => 'required|unique:product_keluar',
             'product_id' => 'required|array',
             'product_id.*' => 'required|exists:products,id',
             'qty' => 'required|array',
@@ -77,6 +78,7 @@ class ProductKeluarController extends Controller
             'price.*' => 'required|numeric',
             'total' => 'required|array',
             'total.*' => 'required|numeric',
+            'total_paid' => 'required|numeric',
             'category_id' => 'required|array',
             'category_id.*' => 'required',
         ]);
@@ -91,13 +93,16 @@ class ProductKeluarController extends Controller
         $prices = $request->price;
         $totals = $request->total;
         $categories = $request->category_id;
+        $total_paid = $request->total_paid;
+    
+        $grandTotal = 0;
     
         // Check stock availability before processing
         $stockErrors = [];
         foreach ($productIds as $index => $productId) {
             $product = Product::findOrFail($productId);
             $requestedQty = $qtys[$index];
-            
+    
             if ($product->qty < $requestedQty) {
                 if ($product->qty == 0) {
                     $stockErrors[] = "Stock of product '{$product->nama}' is 0, cannot deduct from it.<br>";
@@ -107,7 +112,6 @@ class ProductKeluarController extends Controller
             }
         }
     
-        // If there are stock errors, return them
         if (!empty($stockErrors)) {
             return response()->json([
                 'success' => false,
@@ -116,7 +120,6 @@ class ProductKeluarController extends Controller
             ], 400);
         }
     
-        // Loop through each product and create a record for each
         foreach ($productIds as $index => $productId) {
             Product_Keluar::create([
                 'bill_number' => $billNumber,
@@ -130,17 +133,28 @@ class ProductKeluarController extends Controller
                 'tanggal' => $tanggal,
             ]);
     
-            // Update product quantity (we already validated stock is sufficient)
             $product = Product::findOrFail($productId);
             $product->qty -= $qtys[$index];
             $product->save();
+    
+            $grandTotal += $totals[$index];
         }
+        
+        $date = now();
+        Ledger::create([
+            'customer_id' => $customerId,
+            'bill_number' => $billNumber,
+            'bill_amount' => $grandTotal,
+            'amount_paid' => $total_paid,
+            'transaction_date' => $date
+        ]);
     
         return response()->json([
             'success' => true,
             'message' => 'Products Out Created',
         ]);
     }
+    
 
     
     public function update(Request $request, $billNumber)
@@ -212,6 +226,19 @@ class ProductKeluarController extends Controller
     {
         //
     }
+
+    public function getByCustomer($id)
+    {
+        $totalDue = Ledger::where('customer_id', $id)
+                    ->selectRaw('SUM(bill_amount) - SUM(amount_paid) as total_due')
+                    ->value('total_due');
+    
+        return response()->json([
+            'customer_id' => $id,
+            'total_due' => (int) ($totalDue ?? 0)
+        ]);
+    }    
+
 
     /**
      * Show the form for editing the specified resource.

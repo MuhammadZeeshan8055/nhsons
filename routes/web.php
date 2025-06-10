@@ -79,5 +79,7 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/bill-data/{bill_number}', [ProductKeluarController::class, 'getBillData']);
     Route::put('productsOut/{bill_number}', 'ProductKeluarController@update')->name('productsOut.update');
 
+	Route::get('/ledgers-by-customer/{id}', [ProductKeluarController::class, 'getByCustomer']);
+
 
 });

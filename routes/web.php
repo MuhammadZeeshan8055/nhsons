@@ -55,6 +55,9 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/exportSupplierssAll', 'SupplierController@exportSuppliersAll')->name('exportPDF.suppliersAll');
 	Route::get('/exportSuppliersAllExcel', 'SupplierController@exportExcel')->name('exportExcel.suppliersAll');
 
+	Route::resource('ledger', 'LedgerController');
+	Route::get('/apiLedger', 'LedgerController@apiLedger')->name('api.ledger');
+
 	Route::resource('products', 'ProductController')->middleware('role');;
 	Route::get('/apiProducts', 'ProductController@apiProducts')->name('api.products');
 

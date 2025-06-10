@@ -57,6 +57,7 @@
                 <li><a href="{{ route('categories.index') }}"><i class="fa fa-list"></i> <span>Category</span></a></li>
                 <li><a href="{{ route('products.index') }}"><i class="fa fa-cubes"></i> <span>Stock</span></a></li>
                 <li><a href="{{ route('customers.index') }}"><i class="fa fa-users"></i> <span>Customer</span></a></li>
+                <li><a href="{{ route('ledger.index') }}"><i class="fa fa-users"></i> <span>Ledger</span></a></li>
                 <li><a href="{{ route('suppliers.index') }}"><i class="fa fa-truck"></i> <span>Supplier</span></a></li>
                 <li><a href="{{ url('/sale_report') }}"><i class="fa fa-minus"></i> <span>Sale Report</span></a></li>
                 <li><a href="{{ route('productsOut.index') }}"><i class="fa fa-minus"></i> <span>Sale Order</span></a></li>

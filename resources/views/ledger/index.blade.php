@@ -12,6 +12,20 @@
         <div class="box-header">
             <h3 class="box-title">List of Ledger</h3>
         </div>
+
+        <form method="GET" action="{{ url()->current() }}">
+            <div class="box-header" style="width:50%">
+                <label class="control-label">Customer</label>
+                <select name="customer_id" class="form-control select" id="customer_id" onchange="this.form.submit()">
+                    <option value="">-- Choose Customer --</option>
+                    @foreach($customers as $id => $name)
+                        <option value="{{ $id }}" {{ request('customer_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <span class="help-block with-errors"></span>
+            </div>
+        </form>
+
         @if(auth()->user()->role === 'admin')
 
         <div class="box-header">
@@ -34,12 +48,23 @@
                         <th>Bill Number</th>
                         <th>Bill Amount</th>
                         <th>Amount Paid</th>
-                        <th>Total Due</th>
+                        <!-- <th>Total Due</th> -->
                         <th>Transaction Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         <!-- /.box-body -->
@@ -76,47 +101,65 @@
         var table = $('#sales-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('api.ledger') }}",
-            columns: [{
+            ajax: {
+                url: "{{ route('api.ledger') }}",
+                data: function (d) {
+                    d.customer_id = $('#customer_id').val(); 
+                }
+            },
+            columns: [
+                {
                     data: null,
                     name: 'id',
-                    render: function(data, type, row, meta) {
-                        return meta.row + 1; // Sequential numbering starting from 1
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1;
                     }
                 },
-                {
-                    data: 'customer_name',
-                    name: 'customer_name'
-                },
-                {
-                    data: 'bill_number',
-                    name: 'bill_number'
-                },
-                // {data: 'email', name: 'email'},
-                {
-                    data: 'bill_amount',
-                    name: 'bill_amount'
-                },
-                {
-                    data: 'amount_paid',
-                    name: 'amount_paid'
-                },
-                {
-                    data: 'transaction_date',
-                    name: 'transaction_date'
-                },
-                {
-                    data: 'total_due',
-                    name: 'total_due'
-                },
+                { data: 'customer_name', name: 'customer_name' },
+                { data: 'bill_number', name: 'bill_number' },
+                { data: 'bill_amount', name: 'bill_amount' },
+                { data: 'amount_paid', name: 'amount_paid' },
+                { data: 'transaction_date', name: 'transaction_date' },
                 {
                     data: 'action',
                     name: 'action',
                     orderable: false,
                     searchable: false
                 }
-            ]
+            ],
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+
+                var totalBill = 0;
+                api.rows({ page: 'current' }).data().each(function (rowData) {
+                    totalBill += parseFloat(rowData.bill_amount) || 0;
+                });
+
+                var totalPaid = 0;
+                api.rows({ page: 'current' }).data().each(function (rowData) {
+                    totalPaid += parseFloat(rowData.amount_paid) || 0;
+                });
+
+                var totalDue = totalBill - totalPaid;
+
+                $(api.column(3).footer()).html('Total Bill Amount: ' + totalBill.toFixed(2));
+                $(api.column(4).footer()).html('Total Paid Amount: ' + totalPaid.toFixed(2));
+
+                $('#sales-table tfoot tr.total-due-row').remove();
+                var totalDueRow = '<tr class="total-due-row" style="background-color: #f8f9fa; font-weight: bold;">' +
+                    '<td></td><td></td><td></td>' +
+                    '<td>Total Due Amount:</td>' +
+                    '<td style="color: #dc3545;">' + totalDue.toFixed(2) + '</td>' +
+                    '<td></td><td></td>' +
+                    '</tr>';
+
+                $('#sales-table tfoot').append(totalDueRow);
+            }
         });
+        $('#customer_id').on('change', function () {
+            table.ajax.reload(); // 🔁 Reload table with new filter
+        });
+
 
         function addForm() {
             save_method = "add";

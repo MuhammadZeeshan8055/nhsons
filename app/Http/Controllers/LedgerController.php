@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\ExportSuppliers;
 use App\Imports\SuppliersImport;
 use App\Ledger;
+use App\Customer;
 use Excel;
 use Illuminate\Http\Request;
 use PDF;
@@ -21,7 +22,12 @@ class LedgerController extends Controller
     public function index()
     {
         $ledger = Ledger::all();
-		return view('ledger.index');
+
+        $customers = Customer::orderBy('nama','ASC')
+            ->get()
+            ->pluck('nama','id');
+
+        return view('ledger.index', compact('customers'));
     }
 
     /**
@@ -45,20 +51,28 @@ class LedgerController extends Controller
         //
     }
 
-    public function apiLedger()
+    public function apiLedger(Request $request)
     {
-        $ledger = Ledger::with('customer')->get(); // eager load customer
+        // Get the customer_id from query parameters
+        $customerId = $request->query('customer_id');
+
+        // Build the query with optional filtering
+        $query = Ledger::with('customer');
+
+        if (!empty($customerId)) {
+            $query->where('customer_id', $customerId);
+        }
+
+        $ledger = $query->get();
+
+        // Calculate total due for footer
+        $totalDue = $ledger->sum(function ($item) {
+            return $item->bill_amount - $item->amount_paid;
+        });
 
         return Datatables::of($ledger)
             ->addColumn('customer_name', function ($ledger) {
                 return $ledger->customer ? $ledger->customer->nama : '-';
-            })
-            ->addColumn('total_due', function ($ledger) {
-                $totalDue = Ledger::where('customer_id', $ledger->customer_id)
-                    ->selectRaw('SUM(bill_amount) - SUM(amount_paid) as total_due')
-                    ->value('total_due');
-
-                return number_format($totalDue, 2); // format as currency
             })
             ->addColumn('action', function ($ledger) {
                 return 
@@ -66,6 +80,7 @@ class LedgerController extends Controller
                     '<a onclick="deleteData(' . $ledger->id . ')" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> Delete</a>';
             })
             ->rawColumns(['action'])
+            ->with('totalDue', number_format($totalDue, 2))
             ->make(true);
     }
 

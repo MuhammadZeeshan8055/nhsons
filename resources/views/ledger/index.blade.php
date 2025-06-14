@@ -72,7 +72,7 @@
 
     {{-- @include('suppliers.form_import') --}}
 
-    @include('suppliers.form')
+    @include('ledger.form')
 @endsection
 
 @section('bot')
@@ -166,7 +166,7 @@
             $('input[name=_method]').val('POST');
             $('#modal-form').modal('show');
             $('#modal-form form')[0].reset();
-            $('.modal-title').text('Add Suppliers');
+            $('.modal-title').text('Add Ledger');
         }
 
         function editForm(id) {
@@ -174,12 +174,12 @@
             $('input[name=_method]').val('PATCH');
             $('#modal-form form')[0].reset();
             $.ajax({
-                url: "{{ url('suppliers') }}" + '/' + id + "/edit",
+                url: "{{ url('ledger') }}" + '/' + id + "/edit",
                 type: "GET",
                 dataType: "JSON",
                 success: function(data) {
                     $('#modal-form').modal('show');
-                    $('.modal-title').text('Edit Suppliers');
+                    $('.modal-title').text('Edit ledger');
 
                     $('#id').val(data.id);
                     $('#nama').val(data.nama);
@@ -205,7 +205,7 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then(function() {
                 $.ajax({
-                    url: "{{ url('suppliers') }}" + '/' + id,
+                    url: "{{ url('ledger') }}" + '/' + id,
                     type: "POST",
                     data: {
                         '_method': 'DELETE',
@@ -236,8 +236,8 @@
             $('#modal-form form').validator().on('submit', function(e) {
                 if (!e.isDefaultPrevented()) {
                     var id = $('#id').val();
-                    if (save_method == 'add') url = "{{ url('suppliers') }}";
-                    else url = "{{ url('suppliers') . '/' }}" + id;
+                    if (save_method == 'add') url = "{{ url('ledger') }}";
+                    else url = "{{ url('ledger') . '/' }}" + id;
 
                     $.ajax({
                         url: url,

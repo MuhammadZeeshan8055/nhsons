@@ -46,9 +46,23 @@ class LedgerController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // In your LedgerController
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'customer_id' => 'required',
+            'bill_number' => 'required|string|max:255|unique:ledgers,bill_number',
+            'bill_amount' => 'required|numeric|min:0',
+            'amount_paid' => 'required|numeric|min:0',
+            'transaction_date' => 'required|date',
+        ]);
+
+        try {
+            $ledger = Ledger::create($validatedData);
+            return response()->json(['message' => 'Ledger created successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error creating ledger'], 500);
+        }
     }
 
     public function apiLedger(Request $request)
@@ -128,6 +142,11 @@ class LedgerController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Ledger::destroy($id);
+
+		return response()->json([
+			'success' => true,
+			'message' => 'Ledger Deleted',
+		]);
     }
 }

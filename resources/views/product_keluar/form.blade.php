@@ -385,7 +385,18 @@
         });
         $('#grand-total').text(grandTotal.toFixed(2));
 
-        updateTotalRemaining();
+        // Update total remaining immediately after updating grand total
+        let totalPaid = parseFloat($('#total_paid').val().trim()) || 0;
+        let totalDue = parseFloat($('#total_due').val().trim()) || 0;
+
+        console.log('grandTotal:', grandTotal, 'totalPaid:', totalPaid, 'totalDue:', totalDue);
+
+        let difference = grandTotal - totalPaid;
+        let totalRemaining = difference + totalDue;
+
+        console.log('difference:', difference, 'totalRemaining:', totalRemaining);
+
+        $('#total_remaining').val(totalRemaining.toFixed(2));
     }// Setup event listeners when document is ready
     $(document).ready(function() {
         // Trigger grand total update when qty or price changes in add form

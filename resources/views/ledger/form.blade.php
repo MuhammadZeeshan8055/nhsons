@@ -27,26 +27,37 @@
                             <span class="help-block with-errors"></span>
                         </div>
 
-                        <div class="form-group">
-                            <label >Bill Number</label>
-                            <input type="text" class="form-control" id="bill_number" name="bill_number">
-                            <span class="help-block with-errors"></span>
-                        </div>
+                        <!--<div class="form-group">-->
+                        <!--    <label >Bill Number</label>-->
+                        <!--    <input type="text" class="form-control" id="bill_number" name="bill_number">-->
+                        <!--    <span class="help-block with-errors"></span>-->
+                        <!--</div>-->
 
                         <div class="form-group">
-                            <label >Bill Amount</label>
+                            <label >Balance Amount</label>
                             <input type="text" class="form-control" id="bill_amount" name="bill_amount">
                             <span class="help-block with-errors"></span>
                         </div>
-
+                        <!--<div class="form-group">-->
+                        <!--    <input type="hidden" class="form-control" value="<?php echo $date = now();?>" id="transaction_date" name="transaction_date">-->
+                        <!--</div>-->
                         <div class="form-group">
                             <label >Amount Paid</label>
                             <input type="text" class="form-control" id="amount_paid" name="amount_paid">
                             <span class="help-block with-errors"></span>
                         </div>
                         <div class="form-group">
-                            <input type="hidden" class="form-control" value="<?php echo $date = now();?>" id="transaction_date" name="transaction_date">
+                            <label >Description</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                            <span class="help-block with-errors"></span>
                         </div>
+                        <div class="form-group">
+                            <label >Transaction Date</label>
+                            <input type="date" class="form-control" id="transaction_date" name="transaction_date">
+                            <span class="help-block with-errors"></span>
+                        </div>
+                        
+                       
 
 
                     </div>

@@ -8,7 +8,7 @@ class Ledger extends Model
 {
     protected $table = 'ledgers';
 
-    protected $fillable = ['customer_id','bill_number','bill_amount','amount_paid','transaction_date'];
+    protected $fillable = ['customer_id','bill_number','bill_amount','amount_paid','description','transaction_date'];
 
     protected $hidden = ['created_at','updated_at'];
 

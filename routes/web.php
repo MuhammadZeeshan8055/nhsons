@@ -55,9 +55,6 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/exportSupplierssAll', 'SupplierController@exportSuppliersAll')->name('exportPDF.suppliersAll');
 	Route::get('/exportSuppliersAllExcel', 'SupplierController@exportExcel')->name('exportExcel.suppliersAll');
 
-	Route::resource('ledger', 'LedgerController');
-	Route::get('/apiLedger', 'LedgerController@apiLedger')->name('api.ledger');
-
 	Route::resource('products', 'ProductController')->middleware('role');;
 	Route::get('/apiProducts', 'ProductController@apiProducts')->name('api.products');
 
@@ -81,11 +78,19 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/apiUser', 'UserController@apiUsers')->name('api.users');
 	Route::get('/bill-data/{bill_number}', [ProductKeluarController::class, 'getBillData']);
     Route::put('productsOut/{bill_number}', 'ProductKeluarController@update')->name('productsOut.update');
-
-	Route::get('/ledgers-by-customer/{id}', [ProductKeluarController::class, 'getByCustomer']);
-
-	//exportproduct
+    
+    Route::get('/ledgers-by-customer/{id}', [ProductKeluarController::class, 'getByCustomer']);
+    
+    Route::resource('ledger', 'LedgerController');
+	Route::get('/apiLedger', 'LedgerController@apiLedger')->name('api.ledger');
+    
+    //exportproduct
 	Route::get('/exportProductAll', 'ProductController@exportProductAll')->name('exportPDF.productAll');
 	Route::get('/exportProductAllExcel', 'ProductController@exportExcel')->name('exportExcel.productAll');
+    Route::resource('ledger', 'LedgerController');
+    Route::get('api/ledger', 'LedgerController@apiLedger')->name('api.ledger');
+    
+    // New PDF export route
+    Route::get('ledger/export/pdf', 'LedgerController@exportPDF')->name('ledger.exportPDF');
 
 });

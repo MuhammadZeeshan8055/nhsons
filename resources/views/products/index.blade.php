@@ -35,6 +35,10 @@
             </a>
             @endif
         </div>
+        <div class="box-header">
+            <a href="{{ route('exportPDF.productAll') }}" class="btn btn-danger"><i class="fa fa-file-pdf-o"></i> Export PDF</a>
+            <a href="{{ route('exportExcel.productAll') }}" class="btn btn-primary"><i class="fa fa-file-excel-o"></i> Export Excel</a>
+        </div>
         <div class="box-body">
             <table id="products-table" class="table table-bordered table-hover table-striped">
                 <thead>
@@ -46,7 +50,9 @@
                         @endif
                         <th>Qty.</th>
                         <th>Category</th>
-                        {{-- <th>Actions</th> --}}
+                        @if(auth()->user()->role === 'admin')
+                        <th>Actions</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -97,13 +103,14 @@
                     data: 'category_name',
                     name: 'category_name'
                 }
-                // ,
-                // {
-                //     data: 'action',
-                //     name: 'action',
-                //     orderable: false,
-                //     searchable: false
-                // }
+                ,
+                @if(auth()->user()->role === 'admin')
+                {
+                    data: 'action',
+                    name: 'action'
+                },
+                @endif
+                
             ]
         });
 
@@ -120,10 +127,36 @@
             $('.modal-title').text('Add Products');
         }
 
+        // function editForm(id) {
+        //     save_method = 'edit';
+        //     $('input[name=_method]').val('PATCH');
+        //     $('#modal-form form')[0].reset();
+        //     $.ajax({
+        //         url: "{{ url('products') }}" + '/' + id + "/edit",
+        //         type: "GET",
+        //         dataType: "JSON",
+        //         success: function(data) {
+        //             $('#modal-form').modal('show');
+        //             $('.modal-title').text('Edit Products');
+        //             $('#id').val(data.id);
+        //             $('#nama').val(data.nama);
+        //             $('#harga').val(data.harga);
+        //             $('#qty').val(data.qty);
+        //             $('#category_id').val(data.category_id);
+        //             $('#category_id option[value="' + data.category_id + '"]').prop('selected', true);
+        //         },
+        //         error: function() {
+        //             alert("Nothing Data");
+        //         }
+        //     });
+        // }
+        
+        
         function editForm(id) {
             save_method = 'edit';
             $('input[name=_method]').val('PATCH');
             $('#modal-form form')[0].reset();
+            
             $.ajax({
                 url: "{{ url('products') }}" + '/' + id + "/edit",
                 type: "GET",
@@ -136,12 +169,57 @@
                     $('#harga').val(data.harga);
                     $('#qty').val(data.qty);
                     $('#category_id').val(data.category_id);
+                    $('#category_id option[value="' + data.category_id + '"]').prop('selected', true);
                 },
                 error: function() {
                     alert("Nothing Data");
                 }
             });
         }
+        
+        // Add form submission handler
+        $('#form-item').on('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            var url, method;
+            
+            if (save_method == 'edit') {
+                url = "{{ url('products') }}" + '/' + $('#id').val();
+                method = 'POST'; // Laravel expects POST with _method=PATCH
+                formData.append('_method', 'PATCH');
+            } else {
+                url = "{{ url('products') }}";
+                method = 'POST';
+            }
+            
+            // Add CSRF token
+            formData.append('_token', '{{ csrf_token() }}');
+            
+            $.ajax({
+                url: url,
+                type: method,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#modal-form').modal('hide');
+                    location.reload(); // or reload your datatable
+                },
+                error: function(xhr) {
+                    if (xhr.status == 422) {
+                        var errors = xhr.responseJSON.errors;
+                        var errorMessage = 'Validation errors:\n';
+                        for (var field in errors) {
+                            errorMessage += errors[field][0] + '\n';
+                        }
+                        alert(errorMessage);
+                    } else {
+                        alert('An error occurred. Please try again.');
+                    }
+                }
+            });
+        });
 
         function deleteData(id) {
             var csrf_token = $('meta[name="csrf-token"]').attr('content');

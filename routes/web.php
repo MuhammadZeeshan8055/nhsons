@@ -84,5 +84,8 @@ Route::group(['middleware' => 'auth'], function () {
 
 	Route::get('/ledgers-by-customer/{id}', [ProductKeluarController::class, 'getByCustomer']);
 
+	//exportproduct
+	Route::get('/exportProductAll', 'ProductController@exportProductAll')->name('exportPDF.productAll');
+	Route::get('/exportProductAllExcel', 'ProductController@exportExcel')->name('exportExcel.productAll');
 
 });

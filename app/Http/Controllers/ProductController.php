@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportProduct;
 use App\Category;
 use App\Product;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use PDF;
 
 class ProductController extends Controller
 {
@@ -75,6 +77,18 @@ class ProductController extends Controller
         //     'message' => 'Products Created'
         // ]);
 
+    }
+    
+    public function exportProductAll()
+    {
+        $product = Product::with('category')->get();
+        $pdf = PDF::loadView('products.productAllPDF', compact('product'));
+        return $pdf->download('product_stock.pdf');
+    }
+    
+    public function exportExcel()
+    {
+        return (new ExportProduct)->download('product.xlsx');
     }
 
     /**
@@ -168,29 +182,35 @@ class ProductController extends Controller
     }
 
     public function apiProducts(Request $request)
-{
-    $query = Product::query();
-
-    // Filter products by category if a category_id is provided
-    if ($request->has('category_id') && $request->category_id) {
-        $query->where('category_id', $request->category_id);
+    {
+        $query = Product::query();
+    
+        // Filter products by category if a category_id is provided
+        if ($request->has('category_id') && $request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+    
+        return Datatables::of($query)
+            ->addColumn('category_name', function ($product) {
+                return $product->category->name; // Assuming a relationship exists
+            })
+            ->addColumn('action', function ($product) {
+                if (auth()->user()->role === 'admin') {
+                    return 
+                        (auth()->user()->email == 'usman.shani@nhsons.com' ? 
+                            '<a onclick="editForm(' . $product->id . ')" class="btn btn-primary btn-xs">
+                                <i class="glyphicon glyphicon-edit"></i> Edit
+                            </a> ' 
+                            : ''
+                        ) .
+                        '<a onclick="deleteData(' . $product->id . ')" class="btn btn-danger btn-xs">
+                            <i class="glyphicon glyphicon-trash"></i> Delete
+                        </a>';
+                }
+            })
+            ->rawColumns(['category_name', 'action'])
+            ->make(true);
     }
-
-    return Datatables::of($query)
-        ->addColumn('category_name', function ($product) {
-            return $product->category->name; // Assuming a relationship exists
-        })
-        ->addColumn('action', function ($product) {
-            return '<a onclick="editForm(' . $product->id . ')" class="btn btn-primary btn-xs">
-                        <i class="glyphicon glyphicon-edit"></i> Edit
-                    </a> ' .
-                '<a onclick="deleteData(' . $product->id . ')" class="btn btn-danger btn-xs">
-                        <i class="glyphicon glyphicon-trash"></i> Delete
-                    </a>';
-        })
-        ->rawColumns(['category_name', 'action'])
-        ->make(true);
-}
 
 
     // public function apiProducts(){
